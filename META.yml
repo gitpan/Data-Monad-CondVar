@@ -1,0 +1,29 @@
+---
+abstract: 'The CondVar monad.'
+author:
+  - 'hiratara <hiratara {at} cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
+distribution_type: module
+generated_by: 'Module::Install version 1.00'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Data-Monad-CondVar
+no_index:
+  directory:
+    - inc
+    - t
+    - xt
+requires:
+  AnyEvent: 0
+  Data::Monad: 0
+resources:
+  bugtracker: https://github.com/hiratara/p5-Data-Monad-CondVar/issues
+  homepage: https://github.com/hiratara/p5-Data-Monad-CondVar
+  license: http://dev.perl.org/licenses/
+  repository: '/Users/tarara/Documents/GIT_repos/YAPCAsia2011/Data-Monad'
+version: 0.01
