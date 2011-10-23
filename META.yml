@@ -21,9 +21,10 @@ no_index:
 requires:
   AnyEvent: 0
   Data::Monad: 0
+  parent: 0
 resources:
   bugtracker: https://github.com/hiratara/p5-Data-Monad-CondVar/issues
   homepage: https://github.com/hiratara/p5-Data-Monad-CondVar
   license: http://dev.perl.org/licenses/
   repository: '/Users/tarara/Documents/GIT_repos/YAPCAsia2011/Data-Monad'
-version: 0.01
+version: 0.02
