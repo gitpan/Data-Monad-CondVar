@@ -5,12 +5,20 @@ use Data::Monad::CondVar;
 use Data::Monad::Base::Sugar;
 use Test::More;
 
-no_leaks_ok { cv_unit->sleep(.001)->recv };
+sub clear_events() {
+    # Run the event loop and cleanup @timers in AE::Impl::Perl
+    cv_unit->sleep(0)->recv;
+}
+
+# Initialize AE to do better leak tests.
+AnyEvent::detect;
+
+no_leaks_ok { cv_unit->sleep(.002)->recv };
 no_leaks_ok { cv_unit->sleep(0)->flat_map(sub { cv_unit })->recv };
 no_leaks_ok { cv_unit->flat_map(sub { cv_unit->sleep(0) })->recv };
 no_leaks_ok {
-    cv_unit->sleep(.0002)->timeout(.0003);
-    cv_unit->sleep(.001)->recv;
+    cv_unit->sleep(.0004)->timeout(.0006);
+    cv_unit->sleep(.002)->recv;
 };
 no_leaks_ok {
     Data::Monad::Base::Sugar::for { pick sub { cv_unit } }->recv;
@@ -40,11 +48,11 @@ no_leaks_ok {
     }->recv;
 };
 
-no_leaks_ok { cv_unit->sleep(0)->cancel };
+no_leaks_ok { cv_unit->sleep(0)->cancel; clear_events };
 
-no_leaks_ok { cv_unit->sleep(0)->or(cv_unit)->cancel };
-no_leaks_ok { cv_unit->sleep(0)->or(cv_unit->sleep(0))->cancel };
-no_leaks_ok { cv_unit->or(cv_unit->sleep(0))->cancel };
+no_leaks_ok { cv_unit->sleep(0)->or(cv_unit)->cancel; clear_events };
+no_leaks_ok { cv_unit->sleep(0)->or(cv_unit->sleep(0))->cancel; clear_events };
+no_leaks_ok { cv_unit->or(cv_unit->sleep(0))->cancel; clear_events };
 no_leaks_ok { cv_unit->sleep(0)->or(cv_unit->sleep(0))->recv };
 no_leaks_ok { cv_unit->sleep(0)->fail->or(cv_unit->sleep(0))->recv };
 
