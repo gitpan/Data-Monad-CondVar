@@ -4,6 +4,7 @@ author:
   - 'hiratara <hiratara {at} cpan.org>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
+  Test::More: 0.94
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
@@ -22,9 +23,10 @@ requires:
   AnyEvent: 0
   Data::Monad: 0
   parent: 0
+  perl: 5.12.0
 resources:
   bugtracker: https://github.com/hiratara/p5-Data-Monad-CondVar/issues
   homepage: https://github.com/hiratara/p5-Data-Monad-CondVar
   license: http://dev.perl.org/licenses/
   repository: origin
-version: 0.03
+version: 0.04
