@@ -6,7 +6,7 @@ use AnyEvent;
 use Scalar::Util;
 use Exporter qw/import/;
 
-our $VERSION = "0.05";
+our $VERSION = "0.06";
 our @EXPORT = qw/as_cv cv_unit cv_zero cv_fail cv_flat_map_multi cv_map_multi
                  cv_sequence call_cc/;
 
@@ -156,12 +156,24 @@ sub canceler {
     $cv->{_monad_canceler};
 }
 
+sub _add_cb {
+    my ($self, $cb) = @_;
+    if(my $old_cb = $self->cb) {
+        $self->cb(sub {
+            $old_cb->(@_);
+            $cb->(@_);
+        });
+    } else {
+        $self->cb($cb);
+    }
+}
+
 sub flat_map {
     my ($self, $f) = @_;
 
     my $cv_bound = AE::cv;
     my $cv_current = $self;
-    $self->cb(sub {
+    $self->_add_cb(sub {
         my $cv = $cv_current = eval {
             my ($cv) = $f->($_[0]->recv);
             _cv_or_die $cv;
@@ -172,7 +184,7 @@ sub flat_map {
             _assert_cv $cv_bound;
             return $cv_bound->croak($@);
         }
-        $cv->cb(sub {
+        $cv->_add_cb(sub {
             my @v = eval { $_[0]->recv };
             _assert_cv $cv_bound;
             $@ ? $cv_bound->croak($@) : $cv_bound->send(@v);
@@ -190,12 +202,12 @@ sub or {
     my ($self, $alter) = @_;
 
     my $cv_mixed = AE::cv;
-    $self->cb(sub {
+    $self->_add_cb(sub {
         my @v = eval { $_[0]->recv };
         unless ($@) {
             $cv_mixed->(@v);
         } elsif ($@ =~ /\Q$ZERO\E/) {
-            $alter->cb(sub {
+            $alter->_add_cb(sub {
                 my @v = eval { $_[0]->recv };
                 _assert_cv $cv_mixed;
                 $@ ? $cv_mixed->croak($@) : $cv_mixed->(@v);
@@ -215,7 +227,7 @@ sub catch {
 
     my $result_cv = AE::cv;
     my $active_cv = $self;
-    $self->cb(sub {
+    $self->_add_cb(sub {
         my @v = eval { $_[0]->recv };
         my $exception = $@ or return $result_cv->(@v);
 
@@ -226,7 +238,7 @@ sub catch {
         };
         $@ and return (_assert_cv $result_cv)->croak($@);
 
-        $cv->cb(sub {
+        $cv->_add_cb(sub {
             my @v = eval { $_[0]->recv };
             _assert_cv $result_cv;
             $@ ? $result_cv->croak($@) : $result_cv->send(@v);
@@ -470,6 +482,12 @@ hiratara E<lt>hiratara {at} cpan.orgE<gt>
 =head1 SEE ALSO
 
 L<Data::Monad::Base::Monad>
+
+L<AnyEvent>
+
+L<Promises>
+
+L<Future>
 
 =head1 LICENSE
 
